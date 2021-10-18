@@ -46,10 +46,7 @@ class SetWallpaperActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySetWallpaperBinding
     var list : ArrayList<Photo>? = null
-
-    var permissionLauncher: ActivityResultLauncher<String>? = null
-
-    var intentActivityResultLauncher: ActivityResultLauncher<Intent>? = null
+    
 
     var uuid = UUID.randomUUID().toString()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -157,7 +154,7 @@ class SetWallpaperActivity : AppCompatActivity() {
                 )
                 false
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
+        } else {
             Log.v(TAG, "Permission is granted1")
             true
         }
@@ -179,7 +176,7 @@ class SetWallpaperActivity : AppCompatActivity() {
                 )
                 false
             }
-        } else { //permission is automatically granted on sdk<23 upon installation
+        } else {
             Log.v(TAG, "Permission is granted2")
             true
         }
@@ -192,23 +189,21 @@ class SetWallpaperActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             2 -> {
-                Log.d(TAG, "External storage2")
+
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0])
-                    //resume tasks needing this permission
+
                     download()
                 } else {
 
                 }
             }
             3 -> {
-                Log.d(TAG, "External storage1")
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0])
-                    //resume tasks needing this permission
-                    //SharePdfFile()
+
                 } else {
-                    //progress.dismiss()
+
                 }
             }
         }
