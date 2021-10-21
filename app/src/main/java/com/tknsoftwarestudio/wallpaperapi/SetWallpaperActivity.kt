@@ -34,11 +34,19 @@ import android.R.id.text1
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
 import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.delay
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
+import com.squareup.picasso.Picasso
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 
 class SetWallpaperActivity : AppCompatActivity() {
@@ -46,14 +54,14 @@ class SetWallpaperActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySetWallpaperBinding
     var list : ArrayList<Photo>? = null
-    
-
     var uuid = UUID.randomUUID().toString()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySetWallpaperBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.hide(WindowInsets.Type.statusBars())
         } else {
@@ -62,12 +70,20 @@ class SetWallpaperActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
             )
         }
+
+         */
         supportActionBar?.hide()
+
+
+        getUserDetails()
+
 
         var downloadUrl : String? = intent.getStringExtra("downloadUrl")
         binding.downloadButton.setOnClickListener {
-            if (isWriteStoragePermissionGranted() == true && isReadStoragePermissionGranted() == true) {
-                download()
+            if (isWriteStoragePermissionGranted() && isReadStoragePermissionGranted()) {
+                if (downloadUrl != null) {
+                    download()
+                }
             }
 
 
@@ -88,9 +104,59 @@ class SetWallpaperActivity : AppCompatActivity() {
 
     }
 
-    private fun downloadImage(filename: String, downloadUrlOfImage: String) : kotlinx.coroutines.flow.Flow<Any> = flow {
+    private fun getUserDetails() {
+        val altDescription : String? = intent.getStringExtra("alt_description")
+
+        if (altDescription.isNullOrEmpty()) {
+            binding.details.text = "Resim detayı yok."
+        } else {
+            binding.details.text = altDescription
+        }
+
+        val createdAt : String? = intent.getStringExtra("created_at")
+
+        val dateFormatInput = "yyyy-MM-dd'T'HH:mm:ss"
+        val dateFormatOutput = "yyyy-MM-dd"
+
+
+        val formatInput = SimpleDateFormat(dateFormatInput)
+        val formatOutput = SimpleDateFormat(dateFormatOutput)
+
+        val date = formatInput.parse(createdAt)
+        val dateString = formatOutput.format(date)
+
+        if (!createdAt.isNullOrEmpty()) {
+            binding.createdAt.text = "Yüklenme tarihi: " + dateString
+        }
+
+        val userName = intent.getStringExtra("user_name")
+        if (!userName.isNullOrEmpty()) {
+            binding.userName.text = userName.toString()
+        }
+
+        val userImage = intent.getStringExtra("user_profile_image")
+        val imageUri : Uri? = Uri.parse(userImage)
+        if (!userImage.isNullOrEmpty()) {
+            Picasso.get().load(imageUri).into(binding.imageUser)
+            //binding.imageUser.setImageURI(imageUri)
+        }
+
+        val userBio = intent.getStringExtra("user_bio")
+
+        if (!userBio.isNullOrEmpty()) {
+            binding.userBio.text = "Bio: " + userBio
+        } else {
+            binding.userBio.text = "Bio: Boş"
+        }
+
+    }
+
+    private suspend fun downloadImage(filename: String, downloadUrlOfImage: String) : kotlinx.coroutines.flow.Flow<Any> = flow {
         try {
 
+            //binding.progressBar.visibility = View.VISIBLE
+            //binding.textViewDownloadMessage.visibility = View.VISIBLE
+            
             val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
             val downloadUri = Uri.parse(downloadUrlOfImage)
             val request = DownloadManager.Request(downloadUri)
@@ -104,22 +170,38 @@ class SetWallpaperActivity : AppCompatActivity() {
                     File.separator + filename + ".jpg"
                 )
 
-            //emit(dm.enqueue(request))
-            val downloadId = dm.enqueue(request)
+            emit(dm.enqueue(request))
+            //dm.enqueue(request)
 
-            println("downid: " + downloadId)
-            val cursor = dm.query(DownloadManager.Query().setFilterById(downloadId))
-            println("cursor: " + cursor)
-            if (cursor != null && cursor.moveToNext()) {
+            val cursor = dm.query(DownloadManager.Query().setFilterByStatus(DownloadManager.STATUS_PAUSED
+                or DownloadManager.STATUS_PENDING
+                    or DownloadManager.STATUS_RUNNING or DownloadManager.STATUS_SUCCESSFUL))
+
+            if (cursor != null && cursor.moveToFirst()) {
                 val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+
+                cursor.close()
+
+                when (status) {
+                    DownloadManager.STATUS_RUNNING -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                        binding.textViewDownloadMessage.visibility = View.VISIBLE
+                    }
+                }
+
                 println("status: " + status)
-                cursor.close();
 
-                if (status == 1) {
-                    Toast.makeText(this@SetWallpaperActivity, "İndirildi...", Toast.LENGTH_SHORT).show()
+            }
 
+            var onComplete: BroadcastReceiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    binding.textViewDownloadMessage.visibility = View.INVISIBLE
+                    binding.progressBar.visibility = View.INVISIBLE
                 }
             }
+            registerReceiver(onComplete, IntentFilter(
+                    DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+            )
 
             //Toast.makeText(this@SetWallpaperActivity, "Başladı...", Toast.LENGTH_SHORT).show()
 
@@ -128,25 +210,24 @@ class SetWallpaperActivity : AppCompatActivity() {
         }
         return@flow
     }
+
     fun download() = runBlocking {
 
         var downloadUrl : String? = intent.getStringExtra("downloadUrl")
         val flow = downloadImage(uuid, downloadUrl!!)
-        Toast.makeText(this@SetWallpaperActivity, "İndiriliyor lütfen bekleyin...", Toast.LENGTH_SHORT).show()
+        binding.progressBar.visibility = View.VISIBLE
+        binding.textViewDownloadMessage.visibility = View.VISIBLE
+        //delay(2000)
         flow.collect { value ->
-
         }
     }
 
     fun isReadStoragePermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.v(TAG, "Permission is granted1")
+                == PackageManager.PERMISSION_GRANTED) {
                 true
             } else {
-                Log.v(TAG, "Permission is revoked1")
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
@@ -155,7 +236,6 @@ class SetWallpaperActivity : AppCompatActivity() {
                 false
             }
         } else {
-            Log.v(TAG, "Permission is granted1")
             true
         }
     }
@@ -165,10 +245,8 @@ class SetWallpaperActivity : AppCompatActivity() {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED
             ) {
-                Log.v(TAG, "Permission is granted2")
                 true
             } else {
-                Log.v(TAG, "Permission is revoked2")
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -177,7 +255,6 @@ class SetWallpaperActivity : AppCompatActivity() {
                 false
             }
         } else {
-            Log.v(TAG, "Permission is granted2")
             true
         }
     }
@@ -186,27 +263,22 @@ class SetWallpaperActivity : AppCompatActivity() {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        var downloadUrl : String? = intent.getStringExtra("downloadUrl")
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
+
             2 -> {
-
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0])
-
-                    download()
-                } else {
-
-                }
-            }
-            3 -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.v(TAG, "Permission: " + permissions[0] + "was " + grantResults[0])
-
+                    if (downloadUrl != null) {
+                        download()
+                    }
                 } else {
 
                 }
             }
         }
     }
+
+
 
 }

@@ -68,9 +68,7 @@ class MainActivity : AppCompatActivity() {
                 .enqueue(object : retrofit2.Callback<List<Photo>>{
                     override fun onResponse(
                         call: Call<List<Photo>>,
-                        response: Response<List<Photo>>
-
-                    ) {
+                        response: Response<List<Photo>>) {
 
                         job = CoroutineScope(Dispatchers.IO).launch {
                             withContext(Dispatchers.Main) {
