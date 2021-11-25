@@ -34,7 +34,6 @@ class ImageAdapter(var context : Context,var list : ArrayList<Photo>) : Recycler
             intent.putExtra("downloadUrl",list[position].urls.full)
             intent.putExtra("alt_description",list[position].alt_description)
             intent.putExtra("created_at",list[position].created_at)
-
             intent.putExtra("user_name",list[position].user.name)
             intent.putExtra("user_profile_image",list[position].user.profile_image.medium)
             intent.putExtra("user_bio",list[position].user.bio)

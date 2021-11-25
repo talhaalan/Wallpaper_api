@@ -11,5 +11,4 @@ data class Photo (
     val alt_description: String?,
     val urls: Urls,
     //val links: Links,
-    val user: User
-        )
+    val user: User)

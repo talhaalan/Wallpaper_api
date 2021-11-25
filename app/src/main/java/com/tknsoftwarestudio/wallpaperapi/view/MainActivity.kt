@@ -51,8 +51,6 @@ class MainActivity : AppCompatActivity() {
 
         getData()
 
-
-
     }
 
     private fun getData() {
