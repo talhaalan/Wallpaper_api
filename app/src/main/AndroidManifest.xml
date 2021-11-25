@@ -15,10 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WallpaperApi">
         <activity
-            android:name=".SetWallpaperActivity"
+            android:name=".view.SetWallpaperActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,4 +1,4 @@
-package com.tknsoftwarestudio.wallpaperapi
+package com.tknsoftwarestudio.wallpaperapi.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -6,9 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.tknsoftwarestudio.wallpaperapi.R
+import com.tknsoftwarestudio.wallpaperapi.view.SetWallpaperActivity
 import com.tknsoftwarestudio.wallpaperapi.models.Photo
 
 class ImageAdapter(var context : Context,var list : ArrayList<Photo>) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
@@ -28,7 +29,7 @@ class ImageAdapter(var context : Context,var list : ArrayList<Photo>) : Recycler
         Glide.with(context).load(list[position].urls.regular).into(holder.imageView)
 
         holder.imageView.setOnClickListener {
-            val intent = Intent(context,SetWallpaperActivity::class.java)
+            val intent = Intent(context, SetWallpaperActivity::class.java)
             intent.putExtra("image",list[position].urls.regular)
             intent.putExtra("downloadUrl",list[position].urls.full)
             intent.putExtra("alt_description",list[position].alt_description)

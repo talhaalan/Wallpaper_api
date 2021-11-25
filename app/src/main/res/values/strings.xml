@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Wallpaper</string>
+    <string name="app_name">Duvar Kağıtları</string>
+    <string name="download_failed_message">Image download failed.</string>
 </resources>

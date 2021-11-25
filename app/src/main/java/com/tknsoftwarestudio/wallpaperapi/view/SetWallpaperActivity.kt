@@ -1,12 +1,8 @@
-package com.tknsoftwarestudio.wallpaperapi
+package com.tknsoftwarestudio.wallpaperapi.view
 
 import android.Manifest
-import android.R.id
 import android.app.DownloadManager
-import android.app.ProgressDialog
 import android.app.WallpaperManager
-import android.database.Cursor
-import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
@@ -14,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
-import android.view.WindowInsets
-import android.view.WindowManager
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
@@ -26,26 +20,16 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.lang.Exception
-import java.net.URL
 import java.util.*
-import java.util.concurrent.Flow
 import kotlin.collections.ArrayList
-import android.R.id.text1
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Handler
-import android.provider.MediaStore
-import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import kotlinx.coroutines.delay
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import com.squareup.picasso.Picasso
-import java.text.DateFormat
+import com.tknsoftwarestudio.wallpaperapi.R
 import java.text.SimpleDateFormat
 
 
@@ -206,7 +190,7 @@ class SetWallpaperActivity : AppCompatActivity() {
             //Toast.makeText(this@SetWallpaperActivity, "Başladı...", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
-            Toast.makeText(this@SetWallpaperActivity, "Image download failed.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@SetWallpaperActivity, getString(R.string.download_failed_message), Toast.LENGTH_SHORT).show()
         }
         return@flow
     }

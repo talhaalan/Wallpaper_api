@@ -1,29 +1,22 @@
-package com.tknsoftwarestudio.wallpaperapi
+package com.tknsoftwarestudio.wallpaperapi.view
 
-import android.app.ProgressDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.SearchView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.tknsoftwarestudio.wallpaperapi.R
+import com.tknsoftwarestudio.wallpaperapi.adapter.ImageAdapter
 import com.tknsoftwarestudio.wallpaperapi.api.ApiUtils
 import com.tknsoftwarestudio.wallpaperapi.databinding.ActivityMainBinding
-import com.tknsoftwarestudio.wallpaperapi.databinding.ActivitySetWallpaperBinding
 import com.tknsoftwarestudio.wallpaperapi.models.Photo
 import com.tknsoftwarestudio.wallpaperapi.models.Search
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
 import retrofit2.Call
 import retrofit2.Response
-import javax.security.auth.callback.Callback
 
 class MainActivity : AppCompatActivity() {
 
